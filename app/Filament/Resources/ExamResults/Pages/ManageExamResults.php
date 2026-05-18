@@ -13,7 +13,6 @@ class ManageExamResults extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
         ];
     }
 }
