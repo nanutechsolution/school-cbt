@@ -22,8 +22,22 @@ class EditExam extends EditRecord
                 ->icon('heroicon-o-document-text')
                 ->color('info')
                 ->action(function () {
-                    $action = app(GenerateExamDocumentsAction::class);
-                    return $action->generateBeritaAcara($this->record->id);
+                    try {
+                        $action = app(GenerateExamDocumentsAction::class);
+                        $response = $action->generateBeritaAcara($this->record->id);
+
+                        // Alirkan biner PDF menggunakan response stream untuk menghindari error JSON UTF-8
+                        return response()->streamDownload(
+                            fn() => print($response->getContent()),
+                            "Berita_Acara_{$this->record->name}.pdf"
+                        );
+                    } catch (\Exception $e) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Pencetakan Gagal')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->send();
+                    }
                 }),
 
             // 2. Tombol Cetak Daftar Hadir
@@ -32,10 +46,23 @@ class EditExam extends EditRecord
                 ->icon('heroicon-o-document-check')
                 ->color('success')
                 ->action(function () {
-                    $action = app(GenerateExamDocumentsAction::class);
-                    return $action->generateDaftarHadir($this->record->id);
-                }),
+                    try {
+                        $action = app(GenerateExamDocumentsAction::class);
+                        $response = $action->generateDaftarHadir($this->record->id);
 
+                        // Alirkan biner PDF menggunakan response stream untuk menghindari error JSON UTF-8
+                        return response()->streamDownload(
+                            fn() => print($response->getContent()),
+                            "Daftar_Hadir_{$this->record->name}.pdf"
+                        );
+                    } catch (\Exception $e) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Pencetakan Gagal')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->send();
+                    }
+                }),
             DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),
